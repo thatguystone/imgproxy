@@ -1,0 +1,39 @@
+<project name="imgproxy" default="compile">
+	<property file="build.properties" />
+	<property name="binary" value="src/html/${swf}" />
+	
+	<target name="release" depends="compile">
+		<property name="builddir" value="dist/${version}/" />
+		<delete dir="${builddir}" />
+		<mkdir dir="${builddir}" />
+		
+		<copy file="${binary}" todir="${builddir}" />
+		<copy todir="${builddir}">
+			<fileset dir="src/html" />
+		</copy>
+		
+		<property name="jsfile" value="${builddir}imgproxy.js" />
+		<java jar="lib/yuicompressor-2.4.7.jar" fork="true">
+			<arg line="${jsfile}" />
+			<arg line="-o ${jsfile}" />
+		</java>
+		
+		<tar destfile="dist/imgproxy-${version}.tar.gz" basedir="${builddir}" compression="gzip" />
+		
+		<delete dir="${builddir}" />
+	</target>
+	
+	<target name="compile">
+		<echo message="Compiling..." />
+		<exec executable="${mxmlc_bin}" failonerror="true">
+			<arg line="src/as/ImgProxy.as" />
+			<arg line="-output ${binary}"/>
+			<arg line="-target-player '10.1.0'"/>
+			<arg line="-optimize=true" />
+		</exec>
+	</target>
+	
+	<target name="clean">
+		<delete file="${binary}" />
+	</target>
+</project>
