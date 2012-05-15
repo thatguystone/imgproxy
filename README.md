@@ -6,10 +6,9 @@ Security description: https://developer.mozilla.org/en/Canvas_tutorial/Using_ima
 
 **Honestly, you should never need this.  And if you do, find a way not to.**
 
-Example:
+## Remote Example
 
 ```javascript
-	
 	imgproxy.load('http://someserver/image.jpg', function(b64img) {
 		$img = $('<img />');
 		
@@ -22,6 +21,19 @@ Example:
 			pixels = ctx.getImageData(0, 0, img.width, img.height);
 		});
 		
-		$img.attr('src', 'data:image/png;base64,' + b64img);
+		$img.attr('src', b64img);
 	}, errorCallback);
+```
+
+## Local Example
+
+```javascript
+	$('.button').imgproxy(
+		function(img) {
+			$('.flash img').attr('src', img);
+		},
+		function(msg) {
+			console.error(msg);
+		}
+	);
 ```

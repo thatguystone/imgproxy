@@ -1,12 +1,30 @@
-(function() {
+(function($) {
 	"use strict";
 	
-	var $el,
+	var $singleEl, //the swf used for remote loading
 		loading = false,
 		ready = false,
 		id = 0,
 		waiting = [],
 		callbacks = {};
+	
+	function createSwf(idOrEl, vars) {
+		if ($.fn.flash) {
+			if (typeof idOrEl === "string") {
+				idOrEl = $('#' + idOrEl);
+			}
+			
+			idOrEl.flash({
+				height: '100%',
+				flashvars: vars,
+				swf: window.imgproxy.SWF,
+				width: '100%',
+				wmode: 'transparent'
+			});
+		} else {
+			console.error('jquery.swfobject not found.  Cannot load imgproxy.');
+		}
+	}
 	
 	function loadSwf() {
 		if (loading) {
@@ -14,35 +32,16 @@
 		}
 		loading = true;
 		
-		var el = document.createElement('div');
-		el.setAttribute('id', 'imgproxy');
-		document.body.insertBefore(el);
-		
-		if (window.swfobject) {
-			swfobject.embedSWF(imgproxy.SWF, 'imgproxy', '1', '1', '9.0.0');
-		} else if (window.jQuery) { //try jQuery SWFObject: http://jquery.thewikies.com/swfobject/
-			jQuery(function() {
-				if (jQuery.fn.flash) {
-					$el = jQuery('#imgproxy');
-					$el.flash({
-						swf: imgproxy.SWF,
-						width: 1,
-						height: 1,
-						wmode: 'transparent'
-					});
-				} else {
-					console.error('No swf library found.  Cannot load imgproxy');
-				}
+		$singleEl = $('<div />')
+			.attr('id', 'imgproxy')
+			.css({
+				height: 1,
+				width: 1
 			});
-		}
-	}
-	
-	function swf(callback) {
-		if (window.swfobject) {
-			callback.call((navigator.appName.indexOf("Microsoft") != -1 ? window.imgproxy : document.imgproxy));
-		} else {
-			$el.flash(callback);
-		}
+		
+		$('body').append($singleEl);
+		
+		createSwf('imgproxy');
 	}
 	
 	window.imgproxy = {
@@ -55,15 +54,23 @@
 				return;
 			}
 			
+			var localId = id++;
+			
+			this._callbacks(localId, true, successCallback, failCallback);
+			
+			$singleEl.flash(function() {
+				this.load(localId, url);
+			});
+		},
+		
+		_callbacks: function(id, single, successCallback, failCallback) {
 			callbacks[id] = {
+				single: single,
 				success: successCallback,
 				error: failCallback
 			};
-			
-			swf(function() {
-				this.load(id++, url);
-			});
 		},
+		
 		_onLoad: function() {
 			var i;
 			
@@ -71,7 +78,7 @@
 			
 			if (waiting.length) {
 				for (i = 0; i < waiting.length; i++) {
-					this.load.apply(this, waiting[i]);
+					window.imgproxy.load.apply(this, waiting[i]);
 				}
 			}
 			
@@ -80,16 +87,34 @@
 		_onSuccess: function(id, img) {
 			var fn = callbacks[id].success;
 			if (fn) {
-				fn(img);
+				fn('data:image/png;base64,' + img);
 			}
-			delete callbacks[id];
+			
+			if (callbacks[id].single) {
+				delete callbacks[id];
+			}
 		},
 		_onError: function(id, error) {
 			var fn = callbacks[id].error;
 			if (fn) {
 				fn(error);
 			}
-			delete callbacks[id];
+			
+			if (callbacks[id].single) {
+				delete callbacks[id];
+			}
 		}
 	};
-}());
+	
+	$.fn.imgproxy = function(successCallback, failCallback) {
+		var localId = id++;
+		
+		this.each(function() {
+			createSwf($(this), {id: localId, local: true});
+		});
+		
+		window.imgproxy._callbacks(localId, false, successCallback, failCallback);
+		
+		return this;
+	};
+}(jQuery));

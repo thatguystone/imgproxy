@@ -2,6 +2,23 @@
 	<property file="build.properties" />
 	<property name="binary" value="src/html/${swf}" />
 	
+	<macrodef name="compile">
+		<attribute name="debug" default="false" />
+		
+		<sequential>
+			<echo message="Compiling..." />
+			<exec executable="${mxmlc_bin}" failonerror="true">
+				<arg line="src/as/ImgProxy.as" />
+				<arg line="-output ${binary}"/>
+				<arg line="-target-player '10.1.0'"/>
+				<arg line="-optimize=true" />
+				<arg line="-debug=@{debug}"/>
+				<arg line="-define+=CONFIG::DEBUG,@{debug}"/>
+				<arg line="-static-link-runtime-shared-libraries=true"/>
+			</exec>
+		</sequential>
+	</macrodef>
+	
 	<target name="release" depends="compile">
 		<property name="builddir" value="dist/${version}/" />
 		<delete dir="${builddir}" />
@@ -24,13 +41,11 @@
 	</target>
 	
 	<target name="compile">
-		<echo message="Compiling..." />
-		<exec executable="${mxmlc_bin}" failonerror="true">
-			<arg line="src/as/ImgProxy.as" />
-			<arg line="-output ${binary}"/>
-			<arg line="-target-player '10.1.0'"/>
-			<arg line="-optimize=true" />
-		</exec>
+		<compile />
+	</target>
+	
+	<target name="debug">
+		<compile debug="true" />
 	</target>
 	
 	<target name="clean">

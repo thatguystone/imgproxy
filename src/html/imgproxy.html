@@ -3,17 +3,25 @@
 	<title>Img Proxy Test</title>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
-	<!-- <script src="http://jquery.thewikies.com/swfobject/jquery.swfobject.1-1-1.min.js"></script> -->
+	<script src="http://jquery.thewikies.com/swfobject/jquery.swfobject.1-1-1.min.js"></script>
     <script src="imgproxy.js"></script>
     
     <script>
 	    $(function() {
 	    	// imgproxy.SWF = 'http://yourserver/imgproxy.swf';
 	    	
-			imgproxy.load('http://localhost/red.jpg',
+			imgproxy.load('http://localhost/IHR/imgproxy/src/html/test.jpg',
 				function(img) {
-					$('img').attr('src', 'data:image/png;base64,' + img);
+					$('.plain img').attr('src', img);
+				},
+				function(msg) {
+					console.error(msg);
+				}
+			);
+			
+			$('.button').imgproxy(
+				function(img) {
+					$('.flash img').attr('src', img);
 				},
 				function(msg) {
 					console.error(msg);
@@ -21,8 +29,50 @@
 			);
 		});
 	</script>
+	
+	<style>
+		.area {
+			border: 1px solid #0e0e0e;
+			float: left;
+			width: 40%;
+		}
+		
+		.area.flash {
+			margin-right: 20px;
+		}
+		
+		.area .title {
+			background: #000;
+			color: #fff;
+			margin-bottom: 10px;
+			padding: 5px;
+		}
+		
+		.area .content {
+			padding: 10px;
+		}
+		
+		.flash .button {
+			background: url(add.png) center center no-repeat;
+			height: 16px;
+			width: 16px;
+		}
+	</style>
 </head>
 
 <body>
-	<img />
+	<div class="area flash">
+		<div class="title">Local Flash Loading</div>
+		<div class="content">
+			<div class="button"></div>
+			<img />
+		</div>
+	</div>
+	
+	<div class="area plain">
+		<div class="title">Remote Image Loading</div>
+		<div class="content">
+			<img />
+		</div>
+	</div>
 </body>
