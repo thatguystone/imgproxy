@@ -36,6 +36,8 @@
 			.attr('id', 'imgproxy')
 			.css({
 				height: 1,
+				position: 'absolute',
+				top: 0,
 				width: 1
 			});
 		
